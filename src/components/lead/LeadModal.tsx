@@ -218,12 +218,18 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
           {/* 4. Notes Input */}
           <div>
-            <label className="block text-xs font-semibold text-charcoal dark:text-zinc-300 mb-1">
-              Комментарий к заказу (необязательно)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-charcoal dark:text-zinc-300">
+                Комментарий к заказу (необязательно)
+              </label>
+              <span className={`text-[10px] font-mono font-semibold ${notes.length >= 180 ? 'text-red-500' : 'text-charcoal-muted dark:text-zinc-500'}`}>
+                {notes.length}/200
+              </span>
+            </div>
             <textarea
               rows={2}
               value={notes}
+              maxLength={200}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Удобное время для звонка или адрес доставки"
               className="w-full px-4 py-3 rounded-xl bg-surface-card dark:bg-surface-card-dark border border-black/5 dark:border-white/10 text-sm text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"
