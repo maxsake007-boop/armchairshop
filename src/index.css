@@ -10,6 +10,12 @@
   --tg-theme-button-color: #0052ff;
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #f8f9fa;
+
+  /* Telegram safe area fallbacks (overridden by Telegram automatically) */
+  --tg-safe-area-inset-top: 0px;
+  --tg-safe-area-inset-bottom: 0px;
+  --tg-content-safe-area-inset-top: 0px;
+  --tg-content-safe-area-inset-bottom: 0px;
 }
 
 .dark {
@@ -28,6 +34,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* Push content below Telegram's system + header bars */
+  padding-top: calc(var(--tg-safe-area-inset-top) + var(--tg-content-safe-area-inset-top));
 }
 
 /* Custom scrollbars */
