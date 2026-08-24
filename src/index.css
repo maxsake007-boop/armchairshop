@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #1a1a1b;
+  --tg-theme-hint-color: #71717a;
+  --tg-theme-link-color: #0052ff;
+  --tg-theme-button-color: #0052ff;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f8f9fa;
+}
+
+.dark {
+  --tg-theme-bg-color: #121212;
+  --tg-theme-text-color: #f8f9fa;
+  --tg-theme-hint-color: #a1a1aa;
+  --tg-theme-link-color: #3b82f6;
+  --tg-theme-button-color: #0052ff;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #1e1e1e;
+}
+
+body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3c5d9;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Antigravity / internal logs
+.antigravity
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE & OS
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
