@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Flame, Play } from 'lucide-react';
+import { ArrowRight, Sparkles, Play } from 'lucide-react';
 import { Product } from '../types';
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../services/mockData';
 import { ProductCard } from '../components/catalog/ProductCard';
@@ -96,13 +96,13 @@ export const HomePage: React.FC<HomePageProps> = ({
         />
       </div>
 
-      {/* 3. Popular Products Grid */}
+      {/* 3. Top Selection Grid */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
-            <Flame className="w-5 h-5 text-amber-500 fill-amber-500/20" />
+            <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500/20" />
             <h2 className="font-bold text-base text-charcoal dark:text-white tracking-tight">
-              Хиты продаж
+              Топ подборка
             </h2>
           </div>
           <button
