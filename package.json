@@ -13,7 +13,8 @@
     "@telegram-apps/sdk-react": "^2.0.0",
     "lucide-react": "^0.428.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

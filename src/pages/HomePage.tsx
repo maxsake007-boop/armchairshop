@@ -1,11 +1,11 @@
 import React from 'react';
 import { ArrowRight, Sparkles, Play } from 'lucide-react';
 import { Product } from '../types';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../services/mockData';
 import { ProductCard } from '../components/catalog/ProductCard';
 import { CategoryChips } from '../components/catalog/CategoryChips';
 import { triggerHaptic } from '../utils/formatters';
 import { useSettings } from '../context/SettingsContext';
+import { useCatalog } from '../context/CatalogContext';
 
 interface HomePageProps {
   onSelectProduct: (product: Product) => void;
@@ -19,7 +19,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   onGoToCatalog,
 }) => {
   const { reelsPromo } = useSettings();
-  const popularProducts = MOCK_PRODUCTS.filter((p) => p.isPopular);
+  const { products, categories } = useCatalog();
+
+  const popularProducts = products.filter((p) => p.isPopular);
 
   const handleOpenInstagram = () => {
     triggerHaptic('medium');
@@ -39,9 +41,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           onClick={handleOpenInstagram}
           className="group relative h-80 rounded-card overflow-hidden cursor-pointer shadow-lg active:scale-[0.99] transition-all border border-black/5 dark:border-white/10"
         >
-          {/* Background Cover Image using real chair photo */}
+          {/* Background Cover Image */}
           <img
-            src="/chair.jpg"
+            src={reelsPromo.coverImage || '/chair.jpg'}
             alt="Comet Review"
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
@@ -90,7 +92,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </button>
         </div>
         <CategoryChips
-          categories={MOCK_CATEGORIES}
+          categories={categories}
           selectedCategory="all"
           onSelectCategory={() => onGoToCatalog()}
         />

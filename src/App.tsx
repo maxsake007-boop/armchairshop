@@ -124,15 +124,19 @@ export const AppContent: React.FC = () => {
   );
 };
 
+import { CatalogProvider } from './context/CatalogContext';
+
 export function App() {
   return (
     <TelegramProvider>
       <SettingsProvider>
-        <FavoritesProvider>
-          <RequestsProvider>
-            <AppContent />
-          </RequestsProvider>
-        </FavoritesProvider>
+        <CatalogProvider>
+          <FavoritesProvider>
+            <RequestsProvider>
+              <AppContent />
+            </RequestsProvider>
+          </FavoritesProvider>
+        </CatalogProvider>
       </SettingsProvider>
     </TelegramProvider>
   );

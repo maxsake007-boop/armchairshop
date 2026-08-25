@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Search, SlidersHorizontal, PackageSearch } from 'lucide-react';
 import { Product } from '../types';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../services/mockData';
 import { CategoryChips } from '../components/catalog/CategoryChips';
 import { ProductCard } from '../components/catalog/ProductCard';
+import { useCatalog } from '../context/CatalogContext';
 
 interface CatalogPageProps {
   onSelectProduct: (product: Product) => void;
@@ -16,10 +16,11 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { products, categories } = useCatalog();
 
-  const filteredProducts = MOCK_PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesCategory =
-      selectedCategory === 'all' || product.category === selectedCategory;
+      selectedCategory === 'all' || product.category === selectedCategory || product.categoryLabel === selectedCategory;
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -56,7 +57,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
 
       {/* Category Filter Chips */}
       <CategoryChips
-        categories={MOCK_CATEGORIES}
+        categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
       />

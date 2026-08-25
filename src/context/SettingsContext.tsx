@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Banner, ReelsPromo } from '../types';
 import { MOCK_BANNERS, DEFAULT_REELS_PROMO } from '../services/mockData';
+import { supabase } from '../services/supabaseClient';
 
 interface SettingsContextType {
   banner: Banner;
@@ -17,42 +18,39 @@ const SettingsContext = createContext<SettingsContextType>({
 });
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [banner, setBanner] = useState<Banner>(() => {
-    try {
-      const saved = localStorage.getItem('comet_banner');
-      return saved ? JSON.parse(saved) : MOCK_BANNERS[0];
-    } catch {
-      return MOCK_BANNERS[0];
-    }
-  });
+  const [banner, setBanner] = useState<Banner>(MOCK_BANNERS[0]);
+  const [reelsPromo, setReelsPromo] = useState<ReelsPromo>(DEFAULT_REELS_PROMO);
 
-  const [reelsPromo, setReelsPromo] = useState<ReelsPromo>(() => {
-    try {
-      const saved = localStorage.getItem('comet_reels');
-      return saved ? JSON.parse(saved) : DEFAULT_REELS_PROMO;
-    } catch {
-      return DEFAULT_REELS_PROMO;
-    }
-  });
-
+  // Fetch Settings from Supabase on mount
   useEffect(() => {
-    try {
-      localStorage.setItem('comet_banner', JSON.stringify(banner));
-    } catch (e) {
-      console.error('Failed to save banner settings', e);
-    }
-  }, [banner]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('comet_reels', JSON.stringify(reelsPromo));
-    } catch (e) {
-      console.error('Failed to save reels settings', e);
-    }
-  }, [reelsPromo]);
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase.from('settings').select('*').eq('key', 'reels_promo').single();
+        if (!error && data?.value) {
+          setReelsPromo(data.value);
+        } else {
+          // Local fallback
+          const saved = localStorage.getItem('comet_reels');
+          if (saved) setReelsPromo(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.warn('Settings fetch fallback:', e);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const updateBanner = (newBanner: Banner) => setBanner(newBanner);
-  const updateReelsPromo = (newPromo: ReelsPromo) => setReelsPromo(newPromo);
+
+  const updateReelsPromo = async (newPromo: ReelsPromo) => {
+    setReelsPromo(newPromo);
+    try {
+      localStorage.setItem('comet_reels', JSON.stringify(newPromo));
+      await supabase.from('settings').upsert({ key: 'reels_promo', value: newPromo });
+    } catch (e) {
+      console.warn('Save settings error:', e);
+    }
+  };
 
   return (
     <SettingsContext.Provider value={{ banner, reelsPromo, updateBanner, updateReelsPromo }}>
