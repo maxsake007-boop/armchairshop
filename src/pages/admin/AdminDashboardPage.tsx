@@ -382,6 +382,18 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     if (!deleteTarget) return;
 
     if (deleteTarget.type === 'product') {
+      // Find product to clean up images from Supabase Storage
+      const prodToDelete = products.find((p) => p.id === deleteTarget.id);
+      if (prodToDelete?.images) {
+        for (const imgUrl of prodToDelete.images) {
+          if (imgUrl.includes('/chairs-media/')) {
+            const fileName = imgUrl.split('/chairs-media/').pop();
+            if (fileName) {
+              await supabase.storage.from('chairs-media').remove([fileName]);
+            }
+          }
+        }
+      }
       await deleteProduct(deleteTarget.id);
     } else if (deleteTarget.type === 'category') {
       await deleteCategory(deleteTarget.id);
