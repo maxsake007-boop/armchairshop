@@ -6,6 +6,23 @@ export function formatPrice(price: number): string {
 }
 
 /**
+ * Formats raw number to dot-separated string (e.g. 2200000 -> "2.200.000")
+ */
+export function formatPriceDots(value: number | string): string {
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  return Number(digits).toLocaleString('de-DE'); // Uses dots as thousand separators
+}
+
+/**
+ * Parses dot-separated string back to raw number (e.g. "2.200.000" -> 2200000)
+ */
+export function parsePriceDots(formattedStr: string): number {
+  const digits = formattedStr.replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
+/**
  * Triggers Telegram Haptic Feedback if supported
  */
 export function triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' = 'light') {
