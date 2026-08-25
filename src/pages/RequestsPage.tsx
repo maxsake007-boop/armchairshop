@@ -30,14 +30,15 @@ export const RequestsPage: React.FC<RequestsPageProps> = ({ onGoToCatalog }) => 
         return (
           <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" />
-            <span>Доставлено</span>
+            <span>Успешно</span>
           </span>
         );
+      case 'closed':
       default:
         return (
-          <span className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+          <span className="bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
-            <span>Отменено</span>
+            <span>Закрыта</span>
           </span>
         );
     }

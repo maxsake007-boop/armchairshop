@@ -32,7 +32,16 @@ export interface Category {
   iconName: string;
 }
 
-export type RequestStatus = 'new' | 'in_progress' | 'completed' | 'canceled';
+export type RequestStatus = 'new' | 'in_progress' | 'completed' | 'closed';
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: 'superadmin' | 'manager';
+  isActive: boolean;
+  createdAt: string;
+}
 
 export interface LeadRequest {
   id: string;
