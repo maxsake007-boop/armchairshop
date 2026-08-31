@@ -43,10 +43,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateBanner = (newBanner: Banner) => setBanner(newBanner);
 
   const updateReelsPromo = async (newPromo: ReelsPromo) => {
-    setReelsPromo(newPromo);
+    // CRITICAL: Never persist blob: URLs — they expire on page refresh
+    const safePromo = { ...newPromo };
+    if (safePromo.coverImage && safePromo.coverImage.startsWith('blob:')) {
+      console.error('[SettingsContext] Blocked blob: URL from being saved to DB:', safePromo.coverImage);
+      safePromo.coverImage = '/chair.jpg';
+    }
+
+    setReelsPromo(safePromo);
     try {
-      localStorage.setItem('comet_reels', JSON.stringify(newPromo));
-      await supabase.from('settings').upsert({ key: 'reels_promo', value: newPromo });
+      localStorage.setItem('comet_reels', JSON.stringify(safePromo));
+      const { error } = await supabase.from('settings').upsert({ key: 'reels_promo', value: safePromo });
+      if (error) {
+        console.error('[SettingsContext] Save settings error:', error.message);
+      }
     } catch (e) {
       console.warn('Save settings error:', e);
     }

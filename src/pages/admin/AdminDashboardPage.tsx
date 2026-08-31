@@ -326,7 +326,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
           const { data: publicData } = supabase.storage.from('chairs-media').getPublicUrl(fileName);
           uploadedUrls.push(publicData.publicUrl);
         } else {
-          uploadedUrls.push(URL.createObjectURL(compressedFile));
+          console.error('Storage upload failed:', error?.message);
+          alert(`Ошибка загрузки фото: ${error?.message || 'Неизвестная ошибка'}. Попробуйте ещё раз или вставьте URL ссылку.`);
         }
       }
 
@@ -359,7 +360,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
         const { data: publicData } = supabase.storage.from('chairs-media').getPublicUrl(fileName);
         setEditReelsCover(publicData.publicUrl);
       } else {
-        setEditReelsCover(URL.createObjectURL(compressedFile));
+        console.error('Banner upload failed:', error?.message);
+        alert(`Ошибка загрузки баннера: ${error?.message || 'Неизвестная ошибка'}. Попробуйте ещё раз или вставьте URL ссылку.`);
       }
     } catch (err) {
       console.error('Banner upload error:', err);
@@ -401,10 +403,16 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
       inStock: editingProduct.inStock ?? true,
     };
 
+    let result;
     if (isNew) {
-      await addProduct(savedProd);
+      result = await addProduct(savedProd);
     } else {
-      await updateProduct(savedProd);
+      result = await updateProduct(savedProd);
+    }
+
+    if (!result.success) {
+      alert(`Ошибка сохранения: ${result.error || 'Неизвестная ошибка'}. Попробуйте ещё раз.`);
+      return;
     }
 
     setIsProductModalOpen(false);
