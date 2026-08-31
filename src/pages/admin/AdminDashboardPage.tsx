@@ -174,12 +174,44 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
   const [newAdminUser, setNewAdminUser] = useState({ username: '', fullName: '', password: '', role: 'manager' as const });
 
   // Reels & Banner Edit state
-  const [editReelsTitle, setEditReelsTitle] = useState(reelsPromo.title);
-  const [editReelsBadge, setEditReelsBadge] = useState(reelsPromo.badge);
-  const [editReelsUrl, setEditReelsUrl] = useState(reelsPromo.instagramUrl);
+  const [editReelsTitle, setEditReelsTitle] = useState(reelsPromo.title || '');
+  const [editReelsBadge, setEditReelsBadge] = useState(reelsPromo.badge || '');
+  const [editReelsUrl, setEditReelsUrl] = useState(reelsPromo.instagramUrl || '');
   const [editReelsCover, setEditReelsCover] = useState(reelsPromo.coverImage || '/chair.jpg');
-  const [editReelsActive, setEditReelsActive] = useState(reelsPromo.isActive);
+  const [editReelsActive, setEditReelsActive] = useState(reelsPromo.isActive ?? true);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState('');
+
+  // Sync ReelsPromo state whenever reelsPromo context changes
+  useEffect(() => {
+    setEditReelsTitle(reelsPromo.title || '');
+    setEditReelsBadge(reelsPromo.badge || '');
+    setEditReelsUrl(reelsPromo.instagramUrl || '');
+    setEditReelsCover(reelsPromo.coverImage || '/chair.jpg');
+    setEditReelsActive(reelsPromo.isActive ?? true);
+  }, [reelsPromo]);
+
+  // Fetch Admins from Supabase on mount
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const { data, error } = await supabase.from('admins').select('*');
+        if (!error && data && data.length > 0) {
+          const mapped: AdminUser[] = data.map((a) => ({
+            id: String(a.id),
+            username: a.username,
+            fullName: a.full_name,
+            role: a.role as any,
+            isActive: a.is_active ?? true,
+            createdAt: a.created_at || new Date().toISOString(),
+          }));
+          setAdminsList(mapped);
+        }
+      } catch (err) {
+        console.warn('Admins fetch fallback:', err);
+      }
+    };
+    fetchAdmins();
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -398,11 +430,14 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     } else if (deleteTarget.type === 'category') {
       await deleteCategory(deleteTarget.id);
     } else if (deleteTarget.type === 'admin') {
+      const targetAdmin = adminsList.find((a) => a.id === deleteTarget.id);
       setAdminsList((prev) => prev.filter((a) => a.id !== deleteTarget.id));
-      try {
-        await supabase.from('admins').delete().eq('id', deleteTarget.id);
-      } catch (err) {
-        console.warn('Delete admin fallback:', err);
+      if (targetAdmin) {
+        try {
+          await supabase.from('admins').delete().eq('username', targetAdmin.username);
+        } catch (err) {
+          console.warn('Delete admin fallback:', err);
+        }
       }
     }
 
