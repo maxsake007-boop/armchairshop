@@ -54,6 +54,8 @@ import { formatDate, formatPrice, formatPriceDots, parsePriceDots } from '../../
 import { LeadRequest, Product, AdminUser, RequestStatus, Category } from '../../types';
 import { supabase } from '../../services/supabaseClient';
 
+import { compressImage } from '../../utils/imageCompressor';
+
 interface AdminDashboardPageProps {
   onBackToApp: () => void;
 }
@@ -145,6 +147,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [directUrlInput, setDirectUrlInput] = useState('');
 
   // Deletion PIN Modal '1111'
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'product' | 'category' | 'admin'; id: string; name: string } | null>(null);
@@ -299,7 +302,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     setTimeout(() => setSaveSuccessMessage(''), 3000);
   };
 
-  // Multi-file Image Upload to Supabase Storage
+  // Multi-file Image Upload to Supabase Storage with WebP Auto-Compression
   const handleMultiImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -309,17 +312,21 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
 
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `chair_${Date.now()}_${i}.${fileExt}`;
+        const originalFile = files[i];
+        // ⚡ Compress image client-side to WebP format (~100KB)
+        const compressedFile = await compressImage(originalFile, 1200, 1200, 0.82);
 
-        const { data, error } = await supabase.storage.from('chairs-media').upload(fileName, file);
+        const fileName = `chair_${Date.now()}_${i}.webp`;
+        const { data, error } = await supabase.storage.from('chairs-media').upload(fileName, compressedFile, {
+          contentType: 'image/webp',
+          upsert: true,
+        });
 
         if (!error && data) {
           const { data: publicData } = supabase.storage.from('chairs-media').getPublicUrl(fileName);
           uploadedUrls.push(publicData.publicUrl);
         } else {
-          uploadedUrls.push(URL.createObjectURL(file));
+          uploadedUrls.push(URL.createObjectURL(compressedFile));
         }
       }
 
@@ -334,22 +341,30 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     }
   };
 
-  // Banner Cover Upload
+  // Banner Cover Upload with WebP Auto-Compression
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `banner_${Date.now()}.${fileExt}`;
-      const { data, error } = await supabase.storage.from('chairs-media').upload(fileName, file);
+      setUploadingImage(true);
+      // ⚡ Compress banner image client-side
+      const compressedFile = await compressImage(file, 1400, 900, 0.85);
+      const fileName = `banner_${Date.now()}.webp`;
+      const { data, error } = await supabase.storage.from('chairs-media').upload(fileName, compressedFile, {
+        contentType: 'image/webp',
+        upsert: true,
+      });
+
       if (!error && data) {
         const { data: publicData } = supabase.storage.from('chairs-media').getPublicUrl(fileName);
         setEditReelsCover(publicData.publicUrl);
       } else {
-        setEditReelsCover(URL.createObjectURL(file));
+        setEditReelsCover(URL.createObjectURL(compressedFile));
       }
     } catch (err) {
       console.error('Banner upload error:', err);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -1258,17 +1273,33 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                   </div>
 
                   <div className="space-y-3">
-                    <label className="block text-xs text-[#71717A] font-black">
-                      Изображение баннера (Выгрузка фото)
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs text-[#71717A] font-black">
+                        Изображение баннера (Выгрузка или прямая ссылка)
+                      </label>
+                      <span className="text-[10px] text-[#059669] font-black">⚡ Авто-сжатие в WebP</span>
+                    </div>
 
                     <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-white border border-[#c3c5d9] group shadow-sm">
                       <img src={editReelsCover} alt="Banner Preview" className="w-full h-full object-cover" />
                       <label className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
                         <Upload className="w-6 h-6 mb-1" />
-                        <span className="text-xs font-black">Загрузить новое фото баннера</span>
+                        <span className="text-xs font-black">Загрузить фото (Сжатие до WebP)</span>
                         <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
                       </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-black text-[#71717A] mb-1">
+                        🔗 Или вставьте готовую ссылку на баннер (Pinterest, Telegram...):
+                      </label>
+                      <input
+                        type="url"
+                        value={editReelsCover}
+                        onChange={(e) => setEditReelsCover(e.target.value)}
+                        placeholder="https://i.pinimg.com/...jpg"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/70 text-xs font-mono text-[#1A1A1B] focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                      />
                     </div>
                   </div>
                 </div>
@@ -1565,16 +1596,22 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                 />
               </div>
 
-              {/* MULTI-FILE IMAGE UPLOAD */}
-              <div className="bg-[#f8f9fa] p-5 rounded-2xl border border-[#e1e3e4] space-y-3">
+              {/* MULTI-FILE IMAGE UPLOAD + DIRECT URL INPUT (OPTION 4) */}
+              <div className="bg-[#f8f9fa] p-5 rounded-2xl border border-[#e1e3e4] space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="font-black text-[#1A1A1B] flex items-center gap-2">
-                    <Upload className="w-4 h-4 text-[#0052ff]" />
-                    <span>Галерея (Выберите сразу несколько фото до 4 шт.)</span>
-                  </label>
-                  {uploadingImage && <span className="text-[#0052ff] animate-pulse text-[10px] font-black">Загрузка...</span>}
+                  <div>
+                    <label className="font-black text-[#1A1A1B] flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-[#0052ff]" />
+                      <span>Галерея фото кресла (До 4 шт.)</span>
+                    </label>
+                    <span className="text-[10px] text-[#059669] font-black flex items-center gap-1 mt-0.5">
+                      ⚡ Файлы автоматически сжимаются в легкий WebP (~100КБ) для моментальной загрузки
+                    </span>
+                  </div>
+                  {uploadingImage && <span className="text-[#0052ff] animate-pulse text-[10px] font-black">Сжатие & Загрузка...</span>}
                 </div>
 
+                {/* Thumbnails list */}
                 <div className="flex items-center gap-3">
                   {editingProduct?.images?.map((url, idx) => (
                     <div key={idx} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#c3c5d9] bg-white group shadow-sm">
@@ -1602,6 +1639,39 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     </label>
                   )}
                 </div>
+
+                {/* Option 4: Direct URL input for Pinterest, Telegram, Imgur */}
+                {(editingProduct?.images?.length || 0) < 4 && (
+                  <div className="pt-2 border-t border-[#e1e3e4] space-y-1.5">
+                    <label className="block text-[11px] font-black text-[#71717A]">
+                      🔗 Или вставьте прямую ссылку на картинку (Pinterest, Telegram, Cloudinary):
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={directUrlInput}
+                        onChange={(e) => setDirectUrlInput(e.target.value)}
+                        placeholder="https://i.pinimg.com/...jpg"
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/70 text-xs font-mono text-[#1A1A1B] outline-none focus:ring-2 focus:ring-[#0052ff]/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (directUrlInput.trim()) {
+                            setEditingProduct({
+                              ...editingProduct,
+                              images: [...(editingProduct?.images || []), directUrlInput.trim()].slice(0, 4),
+                            });
+                            setDirectUrlInput('');
+                          }
+                        }}
+                        className="bg-[#0052ff] text-white px-4 py-2.5 rounded-xl text-xs font-black hover:bg-[#004ced] transition-all"
+                      >
+                        + Вставить
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
