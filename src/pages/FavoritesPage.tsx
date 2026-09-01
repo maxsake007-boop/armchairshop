@@ -1,7 +1,7 @@
 import React from 'react';
 import { Heart, ShoppingBag } from 'lucide-react';
 import { Product } from '../types';
-import { MOCK_PRODUCTS } from '../services/mockData';
+import { useCatalog } from '../context/CatalogContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { ProductCard } from '../components/catalog/ProductCard';
 import { triggerHaptic } from '../utils/formatters';
@@ -18,7 +18,8 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({
   onGoToCatalog,
 }) => {
   const { favorites } = useFavorites();
-  const favoriteProducts = MOCK_PRODUCTS.filter((p) => favorites.includes(p.id));
+  const { products } = useCatalog();
+  const favoriteProducts = products.filter((p) => favorites.includes(p.id));
 
   return (
     <div className="space-y-4 px-5 pt-3 pb-24 animate-fade-in">

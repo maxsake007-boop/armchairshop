@@ -348,6 +348,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     if (!file) return;
     try {
       setUploadingImage(true);
+
+      // 🗑️ Delete old banner from Storage before uploading new one
+      if (editReelsCover && editReelsCover.includes('/chairs-media/')) {
+        const oldFileName = editReelsCover.split('/chairs-media/').pop();
+        if (oldFileName) {
+          await supabase.storage.from('chairs-media').remove([oldFileName]);
+        }
+      }
+
       // ⚡ Compress banner image client-side
       const compressedFile = await compressImage(file, 1400, 900, 0.85);
       const fileName = `banner_${Date.now()}.webp`;
@@ -492,26 +501,32 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     if (currentUserRole !== 'superadmin') return;
     if (!newAdminUser.username || !newAdminUser.fullName || !newAdminUser.password) return;
 
-    const newAdmin: AdminUser = {
-      id: `ADM-${Date.now()}`,
-      username: newAdminUser.username.trim(),
-      fullName: newAdminUser.fullName.trim(),
-      role: newAdminUser.role,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    setAdminsList((prev) => [...prev, newAdmin]);
-
     try {
-      await supabase.from('admins').insert({
-        username: newAdmin.username,
-        full_name: newAdmin.fullName,
+      const { data: inserted, error } = await supabase.from('admins').insert({
+        username: newAdminUser.username.trim(),
+        full_name: newAdminUser.fullName.trim(),
         password_hash: newAdminUser.password,
-        role: newAdmin.role,
-      });
+        role: newAdminUser.role,
+      }).select().single();
+
+      if (error) {
+        alert(`Ошибка создания администратора: ${error.message}`);
+        return;
+      }
+
+      const newAdmin: AdminUser = {
+        id: String(inserted.id),
+        username: inserted.username,
+        fullName: inserted.full_name,
+        role: inserted.role,
+        isActive: inserted.is_active ?? true,
+        createdAt: inserted.created_at,
+      };
+
+      setAdminsList((prev) => [...prev, newAdmin]);
     } catch (err) {
-      console.warn('Add admin fallback:', err);
+      console.error('Add admin error:', err);
+      alert('Ошибка создания администратора');
     }
 
     setIsAdminModalOpen(false);
@@ -560,58 +575,79 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     .filter((r) => r.status === 'completed')
     .reduce((sum, r) => sum + (r.productPrice || 0), 0);
 
-  // Dynamic Chart Datasets for Recharts
-  const chartDataArea =
-    dashboardTimeFilter === 'today'
-      ? [
-          { time: '08:00', sales: 12, revenue: 33600000 },
-          { time: '10:00', sales: 24, revenue: 67200000 },
-          { time: '12:00', sales: 38, revenue: 106400000 },
-          { time: '14:00', sales: 45, revenue: 126000000 },
-          { time: '16:00', sales: 52, revenue: 145600000 },
-          { time: '18:00', sales: 61, revenue: 170800000 },
-          { time: '20:00', sales: 54, revenue: 151200000 },
-          { time: '22:00', sales: 70, revenue: 196000000 },
-        ]
-      : dashboardTimeFilter === 'week'
-      ? [
-          { time: 'Пн', sales: 18, revenue: 50400000 },
-          { time: 'Вт', sales: 32, revenue: 89600000 },
-          { time: 'Ср', sales: 45, revenue: 126000000 },
-          { time: 'Чт', sales: 40, revenue: 112000000 },
-          { time: 'Пт', sales: 65, revenue: 182000000 },
-          { time: 'Сб', sales: 88, revenue: 246400000 },
-          { time: 'Вс', sales: 75, revenue: 210000000 },
-        ]
-      : dashboardTimeFilter === 'month'
-      ? [
-          { time: '1-5 числа', sales: 42, revenue: 117600000 },
-          { time: '6-10 числа', sales: 78, revenue: 218400000 },
-          { time: '11-15 числа', sales: 95, revenue: 266000000 },
-          { time: '16-20 числа', sales: 110, revenue: 308000000 },
-          { time: '21-25 числа', sales: 140, revenue: 392000000 },
-          { time: '26-31 числа', sales: 165, revenue: 462000000 },
-        ]
-      : [
-          { time: 'Янв', sales: 85, revenue: 238000000 },
-          { time: 'Фев', sales: 92, revenue: 257600000 },
-          { time: 'Мар', sales: 120, revenue: 336000000 },
-          { time: 'Апр', sales: 110, revenue: 308000000 },
-          { time: 'Май', sales: 135, revenue: 378000000 },
-          { time: 'Июн', sales: 150, revenue: 420000000 },
-          { time: 'Июл', sales: 140, revenue: 392000000 },
-          { time: 'Авг', sales: 160, revenue: 448000000 },
-          { time: 'Сен', sales: 175, revenue: 490000000 },
-          { time: 'Окт', sales: 190, revenue: 532000000 },
-          { time: 'Ноя', sales: 210, revenue: 588000000 },
-          { time: 'Дек', sales: 250, revenue: 700000000 },
-        ];
+  // Dynamic Chart Datasets — computed from REAL requests data
+  const buildChartData = () => {
+    const now = new Date();
+    const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+
+    if (dashboardTimeFilter === 'today') {
+      const slots = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+      return slots.map((slot) => {
+        const hour = parseInt(slot);
+        const matching = requests.filter((r) => {
+          const d = new Date(r.createdAt);
+          return d.toDateString() === now.toDateString() && d.getHours() >= hour && d.getHours() < hour + 2;
+        });
+        return { time: slot, sales: matching.length, revenue: matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+      });
+    } else if (dashboardTimeFilter === 'week') {
+      return ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, i) => {
+        const targetDay = i === 6 ? 0 : i + 1; // JS: 0=Sun, 1=Mon
+        const matching = requests.filter((r) => {
+          const d = new Date(r.createdAt);
+          const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+          return diffDays < 7 && d.getDay() === targetDay;
+        });
+        return { time: day, sales: matching.length, revenue: matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+      });
+    } else if (dashboardTimeFilter === 'month') {
+      const ranges = [
+        { label: '1-5 числа', min: 1, max: 5 },
+        { label: '6-10 числа', min: 6, max: 10 },
+        { label: '11-15 числа', min: 11, max: 15 },
+        { label: '16-20 числа', min: 16, max: 20 },
+        { label: '21-25 числа', min: 21, max: 25 },
+        { label: '26-31 числа', min: 26, max: 31 },
+      ];
+      return ranges.map(({ label, min, max }) => {
+        const matching = requests.filter((r) => {
+          const d = new Date(r.createdAt);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && d.getDate() >= min && d.getDate() <= max;
+        });
+        return { time: label, sales: matching.length, revenue: matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+      });
+    } else {
+      // year
+      return monthNames.map((name, i) => {
+        const matching = requests.filter((r) => {
+          const d = new Date(r.createdAt);
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === i;
+        });
+        return { time: name, sales: matching.length, revenue: matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+      });
+    }
+  };
+
+  const chartDataArea = buildChartData();
 
   const chartDataBar = [
-    { name: 'Q1 (Янв-Мар)', sales: 297, revenue: 831600000 },
-    { name: 'Q2 (Апр-Июн)', sales: 395, revenue: 1106000000 },
-    { name: 'Q3 (Июл-Сен)', sales: 475, revenue: 1330000000 },
-    { name: 'Q4 (Окт-Дек)', sales: 650, revenue: 1820000000 },
+    { name: 'Q1 (Янв-Мар)', ...(['0','1','2'].reduce((acc, _, qi) => {
+      const matching = requests.filter((r) => { const d = new Date(r.createdAt); return d.getFullYear() === new Date().getFullYear() && d.getMonth() === qi; });
+      return { sales: acc.sales + matching.length, revenue: acc.revenue + matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+    }, { sales: 0, revenue: 0 })) },
+    { name: 'Q2 (Апр-Июн)', ...([3,4,5].reduce((acc, qi) => {
+      const matching = requests.filter((r) => { const d = new Date(r.createdAt); return d.getFullYear() === new Date().getFullYear() && d.getMonth() === qi; });
+      return { sales: acc.sales + matching.length, revenue: acc.revenue + matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+    }, { sales: 0, revenue: 0 })) },
+    { name: 'Q3 (Июл-Сен)', ...([6,7,8].reduce((acc, qi) => {
+      const matching = requests.filter((r) => { const d = new Date(r.createdAt); return d.getFullYear() === new Date().getFullYear() && d.getMonth() === qi; });
+      return { sales: acc.sales + matching.length, revenue: acc.revenue + matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+    }, { sales: 0, revenue: 0 })) },
+    { name: 'Q4 (Окт-Дек)', ...([9,10,11].reduce((acc, qi) => {
+      const matching = requests.filter((r) => { const d = new Date(r.createdAt); return d.getFullYear() === new Date().getFullYear() && d.getMonth() === qi; });
+      return { sales: acc.sales + matching.length, revenue: acc.revenue + matching.reduce((s, r) => s + (r.productPrice || 0), 0) };
+    }, { sales: 0, revenue: 0 })) },
   ];
 
   // LOGIN SCREEN
@@ -810,7 +846,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
       </nav>
 
       {/* 3. MAIN CANVAS */}
-      <main className="ml-64 mt-16 p-8 flex-1 min-h-[calc(100vh-4rem)] max-w-[1600px] space-y-6">
+      <main className="ml-64 mt-16 p-8 flex-1 min-h-[calc(100vh-4rem)] max-w-[1600px] space-y-6 overflow-y-auto">
 
         {/* ================= TAB 1: REQUESTS ================= */}
         {adminTab === 'requests' && (
@@ -867,7 +903,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-[#e1e3e4] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+            <div className="bg-white rounded-2xl border border-[#e1e3e4] overflow-visible shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+              <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-[#f8f9fa] border-b border-[#e1e3e4] text-[#71717A] uppercase font-black tracking-wider">
@@ -927,6 +964,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
@@ -1602,6 +1640,76 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                   placeholder="Опишите преимущества и характеристики кресла..."
                   className="w-full px-4 py-3 rounded-2xl bg-[#f8f9fa] border border-[#c3c5d9]/60 text-[#1A1A1B] font-bold resize-none focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                 />
+              </div>
+
+              {/* ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ */}
+              <div className="bg-[#f8f9fa] p-5 rounded-2xl border border-[#e1e3e4] space-y-3">
+                <label className="font-black text-[#1A1A1B] flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#0052ff]" />
+                  <span>Технические характеристики</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Эргономика</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.ergonomics || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), ergonomics: e.target.value } })}
+                      placeholder="Динамическая поясничная зона"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Подлокотники</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.armrests || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), armrests: e.target.value } })}
+                      placeholder="4D Регулировка"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Угол наклона спинки</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.reclineAngle || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), reclineAngle: e.target.value } })}
+                      placeholder="90° - 135°"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Макс. нагрузка</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.maxWeight || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), maxWeight: e.target.value } })}
+                      placeholder="До 130 кг"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Материал</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.material || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), material: e.target.value } })}
+                      placeholder="Высокопрочная сетка Dupont"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#71717A] mb-0.5">Гарантия</label>
+                    <input
+                      type="text"
+                      value={editingProduct?.specs?.warranty || ''}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), warranty: e.target.value } })}
+                      placeholder="2 года гарантии"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* MULTI-FILE IMAGE UPLOAD + DIRECT URL INPUT (OPTION 4) */}
