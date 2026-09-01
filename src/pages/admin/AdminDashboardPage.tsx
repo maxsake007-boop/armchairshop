@@ -1654,7 +1654,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.ergonomics || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), ergonomics: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), ergonomics: e.target.value } })}
                       placeholder="Динамическая поясничная зона"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
@@ -1664,7 +1664,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.armrests || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), armrests: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), armrests: e.target.value } })}
                       placeholder="4D Регулировка"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
@@ -1674,7 +1674,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.reclineAngle || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), reclineAngle: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), reclineAngle: e.target.value } })}
                       placeholder="90° - 135°"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
@@ -1684,7 +1684,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.maxWeight || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), maxWeight: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), maxWeight: e.target.value } })}
                       placeholder="До 130 кг"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
@@ -1694,7 +1694,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.material || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), material: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), material: e.target.value } })}
                       placeholder="Высокопрочная сетка Dupont"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
@@ -1704,7 +1704,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     <input
                       type="text"
                       value={editingProduct?.specs?.warranty || ''}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || {}), warranty: e.target.value } })}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, specs: { ...(editingProduct?.specs || { ergonomics: '', armrests: '', reclineAngle: '', maxWeight: '', material: '', warranty: '' }), warranty: e.target.value } })}
                       placeholder="2 года гарантии"
                       className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#c3c5d9]/60 text-[#1A1A1B] text-xs font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                     />
