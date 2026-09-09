@@ -29,17 +29,17 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
 
-  // Fetch Products from Supabase on mount
-  const fetchProducts = async () => {
-    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (error) {
-      console.error('[CatalogContext] fetchProducts error:', error.message, error.code);
-      // Fallback to mock data only if Supabase is completely unavailable
-      setProducts(MOCK_PRODUCTS);
-      return;
-    }
-    if (data && data.length > 0) {
-      const mapped: Product[] = data.map((item) => ({
+  // Fetch Products & Categories from Supabase on mount
+  const loadData = async () => {
+    let prods: Product[] = [];
+    let cats: Category[] = [];
+
+    const { data: pData, error: pError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    if (pError) {
+      console.error('[CatalogContext] fetchProducts error:', pError.message, pError.code);
+      prods = MOCK_PRODUCTS;
+    } else if (pData && pData.length > 0) {
+      prods = pData.map((item) => ({
         id: item.id,
         name: item.name,
         category: item.category,
@@ -60,39 +60,62 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         isPopular: item.is_popular ?? false,
         inStock: item.in_stock ?? true,
       }));
-      setProducts(mapped);
     } else {
-      // DB returned empty — use mock as initial seed
-      setProducts(MOCK_PRODUCTS);
+      prods = MOCK_PRODUCTS;
     }
-  };
 
-  // Fetch Categories from Supabase on mount
-  const fetchCategories = async () => {
-    const { data, error } = await supabase.from('categories').select('*');
-    if (error) {
-      console.error('[CatalogContext] fetchCategories error:', error.message);
-      return;
-    }
-    if (data && data.length > 0) {
-      const mapped: Category[] = data.map((c) => ({
+    const { data: cData, error: cError } = await supabase.from('categories').select('*');
+    if (cError) {
+      console.error('[CatalogContext] fetchCategories error:', cError.message);
+      cats = MOCK_CATEGORIES;
+    } else if (cData && cData.length > 0) {
+      cats = cData.map((c) => ({
         id: c.id,
         name: c.name,
         slug: c.slug,
-        count: c.count || 0,
+        count: 0,
         iconName: c.icon_name || 'Armchair',
       }));
-      setCategories(mapped);
+    } else {
+      cats = MOCK_CATEGORIES;
     }
+
+    // Ensure "all" (Все кресла) category exists at the start
+    const hasAll = cats.some((c) => c.slug === 'all' || c.id === 'all');
+    if (!hasAll) {
+      cats.unshift({
+        id: 'all',
+        name: 'Все кресла',
+        slug: 'all',
+        count: prods.length,
+        iconName: 'Grid',
+      });
+    }
+
+    // Compute live counts
+    const updatedCats = cats.map((c) => {
+      if (c.slug === 'all' || c.id === 'all') {
+        return { ...c, count: prods.length };
+      }
+      const matchingCount = prods.filter((p) =>
+        p.category === c.slug ||
+        p.category === c.id ||
+        p.categoryLabel === c.name ||
+        p.category === c.name
+      ).length;
+      return { ...c, count: matchingCount };
+    });
+
+    setProducts(prods);
+    setCategories(updatedCats);
   };
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
+    loadData();
   }, []);
 
   const refreshProducts = async () => {
-    await fetchProducts();
+    await loadData();
   };
 
   const addProduct = async (prod: Product): Promise<{ success: boolean; error?: string }> => {
@@ -116,7 +139,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     // Re-fetch from DB to guarantee consistency
-    await fetchProducts();
+    await loadData();
     return { success: true };
   };
 
@@ -141,7 +164,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     // Re-fetch from DB to guarantee consistency
-    await fetchProducts();
+    await loadData();
     return { success: true };
   };
 
@@ -153,7 +176,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     // Re-fetch from DB to guarantee consistency
-    await fetchProducts();
+    await loadData();
     return { success: true };
   };
 
@@ -170,7 +193,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return { success: false, error: error.message };
     }
 
-    await fetchCategories();
+    await loadData();
     return { success: true };
   };
 
@@ -181,7 +204,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return { success: false, error: error.message };
     }
 
-    await fetchCategories();
+    await loadData();
     return { success: true };
   };
 

@@ -13,19 +13,19 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
   selectedCategory,
   onSelectCategory,
 }) => {
-  const handleSelect = (id: string) => {
+  const handleSelect = (category: Category) => {
     triggerHaptic('light');
-    onSelectCategory(id);
+    onSelectCategory(category.slug || category.id);
   };
 
   return (
     <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-2 px-5 -mx-5">
       {categories.map((cat) => {
-        const isSelected = selectedCategory === cat.id;
+        const isSelected = selectedCategory === cat.slug || selectedCategory === cat.id;
         return (
           <button
             key={cat.id}
-            onClick={() => handleSelect(cat.id)}
+            onClick={() => handleSelect(cat)}
             className={`whitespace-nowrap px-4 py-2 rounded-2xl text-xs font-semibold tracking-tight transition-all duration-200 flex items-center gap-1.5 ${
               isSelected
                 ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105'

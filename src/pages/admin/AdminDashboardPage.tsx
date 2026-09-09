@@ -1605,8 +1605,10 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                   <label className="block font-black text-[#1A1A1B] mb-1">Категория *</label>
                   <CustomSelect
                     className="w-full"
-                    value={editingProduct?.category || categories[0]?.slug || 'ergonomic'}
-                    options={categories.map((c) => ({ value: c.slug, label: c.name }))}
+                    value={editingProduct?.category || categories.filter((c) => c.slug !== 'all' && c.name !== 'Все кресла')[0]?.slug || 'ergonomic'}
+                    options={categories
+                      .filter((c) => c.slug !== 'all' && c.name !== 'Все кресла')
+                      .map((c) => ({ value: c.slug, label: c.name }))}
                     onChange={(val) => {
                       const selectedCatObj = categories.find((c) => c.slug === val);
                       setEditingProduct({
@@ -1844,13 +1846,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
             <div className="space-y-2 max-h-60 overflow-y-auto pt-2">
               {categories.map((cat) => (
                 <div key={cat.id} className="flex items-center justify-between p-3 rounded-2xl bg-[#f8f9fa] border border-[#e1e3e4]">
-                  <span className="text-xs font-black text-[#1A1A1B]">{cat.name}</span>
-                  <button
-                    onClick={() => requestDelete('category', cat.id, cat.name)}
-                    className="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6]/60 rounded-xl transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <span className="text-xs font-black text-[#1A1A1B]">
+                    {cat.name} {cat.slug === 'all' || cat.name === 'Все кресла' ? <span className="text-[10px] text-[#71717A] font-bold">(системная)</span> : ''}
+                  </span>
+                  {cat.slug !== 'all' && cat.name !== 'Все кресла' && (
+                    <button
+                      onClick={() => requestDelete('category', cat.id, cat.name)}
+                      className="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6]/60 rounded-xl transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

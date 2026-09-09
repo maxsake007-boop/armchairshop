@@ -10,7 +10,7 @@ export interface ProductSpec {
 export interface Product {
   id: string;
   name: string;
-  category: 'ergonomic' | 'gaming' | 'office' | 'executive';
+  category: string;
   categoryLabel: string;
   price: number; // in UZS
   oldPrice?: number;

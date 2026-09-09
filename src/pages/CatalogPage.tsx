@@ -19,8 +19,17 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
   const { products, categories } = useCatalog();
 
   const filteredProducts = products.filter((product) => {
+    const isAll = selectedCategory === 'all' || selectedCategory === 'cat-1' || !selectedCategory;
     const matchesCategory =
-      selectedCategory === 'all' || product.category === selectedCategory || product.categoryLabel === selectedCategory;
+      isAll ||
+      product.category === selectedCategory ||
+      product.categoryLabel?.toLowerCase() === selectedCategory.toLowerCase() ||
+      categories.some(
+        (c) =>
+          (c.slug === selectedCategory || c.id === selectedCategory || c.name.toLowerCase() === selectedCategory.toLowerCase()) &&
+          (c.slug === product.category || c.id === product.category || c.name === product.categoryLabel)
+      );
+
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
