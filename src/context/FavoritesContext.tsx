@@ -16,7 +16,7 @@ const FavoritesContext = createContext<FavoritesContextType>({
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('comet_favorites');
+      const saved = localStorage.getItem('chair_favorites') || localStorage.getItem('comet_favorites');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -25,7 +25,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     try {
-      localStorage.setItem('comet_favorites', JSON.stringify(favorites));
+      localStorage.setItem('chair_favorites', JSON.stringify(favorites));
     } catch (e) {
       console.error('Failed to save favorites', e);
     }

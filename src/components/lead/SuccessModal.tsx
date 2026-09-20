@@ -32,7 +32,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           Заявка принята!
         </h3>
         <p className="text-xs text-charcoal-muted dark:text-zinc-400 mb-6 leading-relaxed">
-          Менеджер Comet.Uz уже связывается с вами для подтверждения заказа и уточнения детали доставки.
+          Менеджер Chair Shop уже связывается с вами для подтверждения заказа и уточнения деталей доставки.
         </p>
 
         <div className="bg-surface-card dark:bg-surface-card-dark rounded-xl p-3.5 mb-6 flex items-center gap-3 text-left border border-black/5 dark:border-white/5">

@@ -30,7 +30,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setReelsPromo(data.value);
         } else {
           // Local fallback
-          const saved = localStorage.getItem('comet_reels');
+          const saved = localStorage.getItem('chair_reels') || localStorage.getItem('comet_reels');
           if (saved) setReelsPromo(JSON.parse(saved));
         }
       } catch (e) {
@@ -52,7 +52,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setReelsPromo(safePromo);
     try {
-      localStorage.setItem('comet_reels', JSON.stringify(safePromo));
+      localStorage.setItem('chair_reels', JSON.stringify(safePromo));
       const { error } = await supabase.from('settings').upsert({ key: 'reels_promo', value: safePromo });
       if (error) {
         console.error('[SettingsContext] Save settings error:', error.message);

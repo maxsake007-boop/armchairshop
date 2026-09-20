@@ -218,7 +218,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123' || password === 'comet2026') {
+    if (password === 'admin123' || password === 'chair2026' || password === 'comet2026') {
       setIsAuthenticated(true);
       setCurrentUserRole('superadmin');
       setLoginError('');
@@ -281,7 +281,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `CometUz_Requests_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `ChairShop_Requests_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -386,7 +386,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
     if (!editingProduct?.name || !rawPrice) return;
 
     const isNew = !editingProduct.id;
-    const prodId = editingProduct.id || `comet-chair-${Date.now()}`;
+    const prodId = editingProduct.id || `chair-${Date.now()}`;
 
     const categoryObj = categories.find((c) => c.slug === editingProduct.category || c.name === editingProduct.categoryLabel);
 
@@ -660,7 +660,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
           </div>
 
           <h2 className="font-extrabold text-2xl text-center text-[#1A1A1B] mb-1">
-            CometAdmin
+            ChairAdmin
           </h2>
           <p className="text-xs text-[#71717A] text-center mb-6 font-extrabold">
             Seating Solutions • Десктопная панель
@@ -720,7 +720,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
             <Armchair className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-extrabold text-base text-[#003ec7] leading-tight">CometAdmin</h1>
+            <h1 className="font-extrabold text-base text-[#003ec7] leading-tight">ChairAdmin</h1>
             <p className="text-[10px] text-[#71717A] uppercase font-black tracking-wider">Seating Solutions</p>
           </div>
         </div>
@@ -839,7 +839,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
               <span className="block text-xs font-black text-[#1A1A1B] leading-none">
                 {currentUserRole === 'superadmin' ? 'Главный Суперадмин' : 'Менеджер'}
               </span>
-              <span className="text-[10px] text-[#71717A] font-bold">Comet.Uz Admin</span>
+              <span className="text-[10px] text-[#71717A] font-bold">Chair Shop Admin</span>
             </div>
           </div>
         </div>
@@ -1582,7 +1582,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onBackTo
                     required
                     value={editingProduct?.name || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                    placeholder="Например: Comet Ergo Pro White"
+                    placeholder="Например: Ergo Pro White"
                     className="w-full px-4 py-3 rounded-2xl bg-[#f8f9fa] border border-[#c3c5d9]/60 text-[#1A1A1B] font-extrabold focus:ring-2 focus:ring-[#0052ff]/20 outline-none"
                   />
                 </div>

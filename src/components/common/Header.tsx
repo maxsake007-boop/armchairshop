@@ -17,12 +17,12 @@ export const Header: React.FC = () => {
       <div className="flex items-center gap-3">
         <img
           src="/logo.png"
-          alt="Comet.Uz"
-          className="h-9 w-9 object-contain"
+          alt="Chair Shop"
+          className="h-9 w-9 object-contain rounded-xl shadow-sm"
         />
         <div>
           <span className="font-extrabold text-lg tracking-tight text-charcoal dark:text-white leading-none">
-            Comet.Uz
+            Chair Shop
           </span>
           <p className="text-[11px] text-charcoal-muted dark:text-zinc-400 font-medium leading-tight">
             {user?.first_name ? `Привет, ${user.first_name} 👋` : 'Эргономика & Комфорт'}

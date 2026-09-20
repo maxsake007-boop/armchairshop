@@ -51,7 +51,7 @@ export const RequestsPage: React.FC<RequestsPageProps> = ({ onGoToCatalog }) => 
           Мои заявки
         </h1>
         <p className="text-xs text-charcoal-muted dark:text-zinc-400">
-          История и статусы ваших обращений в Comet.Uz
+          История и статусы ваших обращений в Chair Shop
         </p>
       </div>
 

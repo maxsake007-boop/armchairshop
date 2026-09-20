@@ -13,7 +13,7 @@ export const MOCK_CATEGORIES: Category[] = [
 export const MOCK_BANNERS: Banner[] = [
   {
     id: 'b1',
-    title: 'Comet.Uz Seating',
+    title: 'Chair Shop',
     subtitle: 'Премиальные эргономичные кресла',
     imageUrl: '/chair.jpg',
     buttonText: 'Смотреть каталог',
@@ -25,7 +25,7 @@ export const DEFAULT_REELS_PROMO: ReelsPromo = {
   badge: 'Новинка',
   title: 'кресло, которое стоит попробовать',
   buttonText: 'Смотреть обзор',
-  instagramUrl: 'https://instagram.com/comet.uz',
+  instagramUrl: 'https://instagram.com/chairshop',
   coverImage: '/reels_cover.png',
   isActive: true,
 };
@@ -33,7 +33,7 @@ export const DEFAULT_REELS_PROMO: ReelsPromo = {
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: 'comet-ergo-white',
-    name: 'Comet Ergo White Pro',
+    name: 'Ergo White Pro',
     category: 'ergonomic',
     categoryLabel: 'Эргономичное',
     price: 3450000,
@@ -54,7 +54,7 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 'comet-gaming-cyber',
-    name: 'Comet Cyber Gaming Black',
+    name: 'Cyber Gaming Black',
     category: 'gaming',
     categoryLabel: 'Геймерское',
     price: 2890000,
@@ -75,7 +75,7 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 'comet-executive-mesh',
-    name: 'Comet Executive Mesh Grey',
+    name: 'Executive Mesh Grey',
     category: 'office',
     categoryLabel: 'Офисное премиум',
     price: 2450000,
@@ -96,7 +96,7 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 'comet-boss-leather',
-    name: 'Comet Boss Leather Black',
+    name: 'Boss Leather Black',
     category: 'executive',
     categoryLabel: 'Руководительское',
     price: 4900000,

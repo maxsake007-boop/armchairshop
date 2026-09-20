@@ -25,7 +25,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const handleOpenInstagram = () => {
     triggerHaptic('medium');
-    const url = reelsPromo.instagramUrl || 'https://instagram.com/comet.uz';
+    const url = reelsPromo.instagramUrl || 'https://instagram.com/chairshop';
     if (window.Telegram?.WebApp?.openLink) {
       window.Telegram.WebApp.openLink(url);
     } else {
@@ -44,7 +44,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           {/* Background Cover Image */}
           <img
             src={reelsPromo.coverImage || '/chair.jpg'}
-            alt="Comet Review"
+            alt="Chair Review"
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
 

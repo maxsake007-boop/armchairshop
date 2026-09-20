@@ -99,7 +99,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     }
 
     if (!tgUsernameClean) {
-      setError('Пожалуйста, укажите ваш никнейм в Telegram (например, @comet_user).');
+      setError('Пожалуйста, укажите ваш никнейм в Telegram (например, @username).');
       triggerHaptic('warning');
       return;
     }
@@ -125,7 +125,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-surface-card dark:border-surface-card-dark pb-4 mb-4">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Comet.Uz" className="w-9 h-9 object-contain" />
+            <img src="/logo.png" alt="Chair Shop" className="w-9 h-9 object-contain rounded-xl" />
             <div>
               <h2 className="font-bold text-base text-charcoal dark:text-white leading-tight">
                 Оформить заявку
@@ -211,7 +211,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
               type="text"
               value={telegramUsername}
               onChange={handleTelegramChange}
-              placeholder="@comet.uz"
+              placeholder="@username"
               className="w-full px-4 py-3 rounded-xl bg-surface-card dark:bg-surface-card-dark border border-black/5 dark:border-white/10 text-sm text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-primary font-mono"
             />
           </div>

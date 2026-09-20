@@ -18,7 +18,7 @@ const RequestsContext = createContext<RequestsContextType>({
 export const RequestsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [requests, setRequests] = useState<LeadRequest[]>(() => {
     try {
-      const saved = localStorage.getItem('comet_requests');
+      const saved = localStorage.getItem('chair_requests') || localStorage.getItem('comet_requests');
       if (!saved) return [];
       const parsed: LeadRequest[] = JSON.parse(saved);
       return parsed.filter((r) => r.id !== 'REQ-1001' && r.id !== 'REQ-1002');
@@ -68,7 +68,7 @@ export const RequestsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Sync to local storage for offline fallback
   useEffect(() => {
     try {
-      localStorage.setItem('comet_requests', JSON.stringify(requests));
+      localStorage.setItem('chair_requests', JSON.stringify(requests));
     } catch (e) {
       console.error('Failed to save requests', e);
     }
